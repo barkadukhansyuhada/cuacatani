@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Petani BMKG — Prakiraan Musim Kemarau 2026
 
-## Getting Started
+Aplikasi web interaktif mobile-first untuk membantu petani dan penyuluh pertanian Indonesia memahami prakiraan musim kemarau 2026 berdasarkan data resmi BMKG.
 
-First, run the development server:
+## Fitur
+
+- **Dashboard Nasional** — Statistik 699 Zona Musim, distribusi risiko, insight otomatis
+- **Pencarian & Filter** — Cari zona berdasarkan nama, pulau, risiko, sifat hujan
+- **Detail ZOM** — Chart curah hujan prakiraan vs normal, tabel selisih, rekomendasi tanam
+- **Perbandingan** — Bandingkan 2–4 ZOM secara side-by-side
+- **Mode Petani & Penyuluh** — Tampilan sederhana vs detail teknis dengan audit dasarian
+- **Ekspor** — CSV, share (Web Share API), dan print
+- **Metodologi** — Penjelasan transparan tentang sumber data dan konversi nilai
+
+## Tech Stack
+
+- Next.js 16 (App Router, Static Export)
+- TypeScript
+- Tailwind CSS v4
+- Recharts
+- Lucide React
+
+## Menjalankan Lokal
 
 ```bash
+# 1. Install dependencies
+cd app
+npm install
+
+# 2. Development mode
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# 3. Build static export
+npm run build
+
+# 4. Preview build hasil
+npx serve out
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka `http://localhost:3000` di browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Struktur Folder
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+├── public/data/                    # Audit JSON (lazy-loaded)
+├── src/
+│   ├── app/                        # Next.js App Router pages
+│   │   ├── page.tsx                # Dashboard (Beranda)
+│   │   ├── cari/                   # Pencarian & filter ZOM
+│   │   ├── zom/[id]/               # Detail ZOM (699 halaman)
+│   │   ├── bandingkan/             # Perbandingan ZOM
+│   │   └── metodologi/             # Metodologi data
+│   ├── components/
+│   │   ├── layout/                 # AppShell, BottomNav, ModeToggle
+│   │   ├── dashboard/              # StatCard, RiskBreakdown, InsightList
+│   │   ├── zom/                    # ZomCard, RainfallChart, AuditPanel
+│   │   ├── search/                 # SearchBar, FilterPanel, SortSelect
+│   │   └── shared/                 # RiskBadge, SifatBadge, EmptyState
+│   ├── contexts/                   # ModeContext, CompareContext
+│   ├── data/                       # JSON data + typed indexes
+│   ├── hooks/                      # useMode, useCompare
+│   └── lib/                        # types, constants, filters, utils
+```
 
-## Learn More
+## Arsitektur Data
 
-To learn more about Next.js, take a look at the following resources:
+- **pmk2026_zom_all.json** (880 KB) — Data utama 699 ZOM, di-bundle langsung
+- **pmk2026_zom_all_audit.json** (2 MB) — Data audit dasarian, lazy-loaded hanya di Mode Penyuluh
+- Nilai curah hujan prakiraan adalah estimasi representatif dari kategori warna PDF BMKG:
+  - `<50` → 25 mm, `50-150` → 100 mm, `150-300` → 225 mm, `≥300` → 300 mm
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Aplikasi ini menghasilkan static export (`output: 'export'`) — bisa di-deploy ke:
+- Vercel, Netlify, GitHub Pages
+- Nginx / Apache (serve folder `out/`)
+- Bahkan dari USB drive (buka `index.html` langsung)
 
-## Deploy on Vercel
+## Catatan Penting
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Aplikasi ini **bukan produk resmi BMKG**
+- Nilai curah hujan prakiraan adalah estimasi, bukan angka presisi
+- Data koordinat ZOM belum tersedia; arsitektur siap untuk integrasi GeoJSON di masa depan
+- Seluruh 699 halaman ZOM di-prerender sebagai static HTML saat build
